@@ -101,15 +101,15 @@ jobs:
         name: OpenWrt_rootfs_${{ env.build_date }}
         path: openwrt/bin
 
-    - name: Packit firmware
+    - name: Pack with Packit
       uses: ffuqiangg/amlogic-s9xxx-openwrt@main
       with:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
         openwrt_board: s905d_vplus
         kernel_repo: ophub/kernel
-        openwrt_kernel: ${{ env.kernel_version }}
-        kernel_usage: stable
-        auto_kernel: false
+        openwrt_kernel: 6.6.85
+        kernel_usage: auto
+        auto_kernel: true
         openwrt_size: 820
         build_date: ${{ env.build_date }}
 
