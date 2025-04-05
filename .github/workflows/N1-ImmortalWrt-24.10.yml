@@ -101,11 +101,17 @@ jobs:
         name: OpenWrt_rootfs_${{ env.build_date }}
         path: openwrt/bin
 
+    - name: Download Linux Kernel Source (6.6.73)
+      run: |
+        mkdir -p /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/make-openwrt/kernel/stable/
+        cd /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/make-openwrt/kernel/stable/
+        wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.73.tar.gz
+
     - name: Packit firmware
       uses: ffuqiangg/amlogic-s9xxx-openwrt@main
       with:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
-        openwrt_board: s905d
+        openwrt_board: s905d_vplus
         kernel_repo: ophub/kernel
         openwrt_kernel: ${{ env.kernel_version }}
         kernel_usage: stable
