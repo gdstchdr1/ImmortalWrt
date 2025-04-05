@@ -72,7 +72,7 @@ jobs:
     - name: Load custom configuration
       run: |
         latest_release="$(curl -s https://github.com/immortalwrt/immortalwrt/tags | grep -Eo "v[0-9\.]+-*r*c*[0-9]*.tar.gz" | sed -n '/24.10/p' | sed -n 1p | sed 's/.tar.gz//g' | sed 's/v//g')"
-        kernel_version=$(cat openwrt/include/kernel-6.6 | grep -oE "[1-9]\.[1-9][0-9]*\.[1-9][0-9]*")
+        kernel_version="6.6.85"
         sed -i "s/DATE/${{ env.build_date }}/;s/WRT_SOUR/ImmortalWrt/;s/RELEASES/${latest_release}/" ./openwrt/files/etc/banner
         echo "latest_release=${latest_release}" >> ${GITHUB_ENV}
         echo "kernel_version=${kernel_version}" >> ${GITHUB_ENV}
@@ -100,12 +100,6 @@ jobs:
       with:
         name: OpenWrt_rootfs_${{ env.build_date }}
         path: openwrt/bin
-
-    - name: Download Linux Kernel Source (6.6.73)
-      run: |
-        mkdir -p /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/make-openwrt/kernel/stable/
-        cd /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/make-openwrt/kernel/stable/
-        wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.73.tar.gz
 
     - name: Packit firmware
       uses: ffuqiangg/amlogic-s9xxx-openwrt@main
