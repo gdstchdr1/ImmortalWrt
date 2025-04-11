@@ -1,7 +1,7 @@
 config amlogic 'config'
 	option enable '1'
 	option amlogic_firmware_repo 'https://github.com/gdstchdr1/build_openwrt'
-	option amlogic_firmware_tag 'N1-ImmortalWrt'
+	option amlogic_firmware_tag 's905d'
 	option amlogic_firmware_suffix '.img.gz'
 	option amlogic_kernel_path 'https://github.com/breakingbadboy/OpenWrt'
 	option amlogic_firmware_config '1'
