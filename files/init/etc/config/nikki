@@ -2,10 +2,10 @@
 config status 'status'
 
 config config 'config'
-	option enabled '1'
+	option enabled '0'
 	option profile 'subscription:subscription'
 	option start_delay '5'
-	option scheduled_restart '1'
+	option scheduled_restart '0'
 	option cron_expression '0 3 * * *'
 	option test_profile '0'
 	option fast_reload '1'
