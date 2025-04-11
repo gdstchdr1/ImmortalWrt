@@ -14,9 +14,10 @@
 |Openwrt-24.10 |⭕ |❌ |⭕ |⭕ |⭕ |⭕ |
 |LEDE |⭕ |❌ |⭕ |⭕ |⭕ |⭕ |
 |iStoreOS-22.03 |⭕ |⭕ |⭕ |❌ |❌ |❌ |
-===cutline===
+
 `ImmortalWrt-18.06 固件代码太老，其 PassWall 插件不含 sing-box 核心。`
 
+===cutline===
 ### sing-box
 
 sing-box 裸核相关脚本文件安装使用方法见 ⌈ [sing-box 安装使用文档](https://github.com/ffuqiangg/build_openwrt/blob/main/doc/sing-box_new.md) ⌋
