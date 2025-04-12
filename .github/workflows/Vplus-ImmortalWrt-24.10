@@ -1,0 +1,193 @@
+name: Vplus-ImmortalWrt-24.10
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - Vplus-ImmortalWrt-24.10
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+    - name: Show system
+      run: |
+        echo -e "💬 Server information \n"
+        echo -e "💻 Server running on Ubuntu: [ Release: $(cat /etc/os-release | grep VERSION_CODENAME | cut -d '=' -f2) / Host: $(arch) ] \n"
+        echo -e "🧮 Server CPU configuration information: \n$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+        echo -e "💾 Server memory usage: \n$(free -h) \n"
+        echo -e "🗃️ Server space usag: \n$(df -hT ${GITHUB_WORKSPACE}) \n"
+
+    - name: Maximize build space
+      uses: easimon/maximize-build-space@master
+      with:
+        swap-size-mb: 4096
+        temp-reserve-mb: 512
+        root-reserve-mb: 4608
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+        remove-codeql: 'true'
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Init build dependencies
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        docker rmi $(docker images -q) 2>/dev/null
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache clang cmake cpio \
+          curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 \
+          libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev libreadline-dev \
+          libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip \
+          python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs \
+          upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo -E git config --global user.name 'GitHub Actions' && git config --global user.email 'noreply@github.com'
+        sudo -E git config --global core.abbrev auto
+        df -h
+
+    - name: Prepare source code
+      run: |
+        sudo chown -R runner:runner /home/runner/work/build_openwrt
+        echo "build_date=$(date +%Y.%m.%d)" >> ${GITHUB_ENV}
+        cp -r ./scripts/immortalwrt-24.10/. ./
+        /bin/bash 01_prepare_source_code.sh
+        ln -sf /home/runner/work/build_openwrt/build_openwrt/openwrt /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/openwrt
+
+    - name: Prepare package
+      working-directory: ${{ github.workspace }}/openwrt
+      run: |
+        cp -r ../scripts/immortalwrt-24.10/. ./
+        /bin/bash 02_prepare_package.sh
+
+    - name: Load custom configuration
+      run: |
+        latest_release="$(curl -s https://github.com/immortalwrt/immortalwrt/tags | grep -Eo "v[0-9\.]+-*r*c*[0-9]*.tar.gz" | sed -n '/24.10/p' | sed -n 1p | sed 's/.tar.gz//g' | sed 's/v//g')"
+        kernel_version="6.6.85"
+        sed -i "s/DATE/${{ env.build_date }}/;s/WRT_SOUR/ImmortalWrt/;s/RELEASES/${latest_release}/" ./openwrt/files/etc/banner
+        echo "latest_release=${latest_release}" >> ${GITHUB_ENV}
+        echo "kernel_version=${kernel_version}" >> ${GITHUB_ENV}
+
+    - name: Make config
+      working-directory: ${{ github.workspace }}/openwrt
+      run: |
+        cp ../config/immortalwrt-24.10/config.seed .config
+        make defconfig
+
+    - name: Download package
+      working-directory: ${{ github.workspace }}/openwrt
+      run: |
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Compile the firmware
+      working-directory: ${{ github.workspace }}/openwrt
+      run: |
+        make -j$(nproc) || make -j1 || make -j1 V=s
+
+    - name: Upload firmware directory
+      uses: actions/upload-artifact@main
+      with:
+        name: OpenWrt_rootfs_${{ env.build_date }}
+        path: openwrt/bin
+
+    - name: Packit firmware
+      uses: ffuqiangg/amlogic-s9xxx-openwrt@main
+      with:
+        openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
+        openwrt_board: h6
+        kernel_repo: ophub/kernel
+        openwrt_kernel: "6.6.85"        # 直接指定你要的版本号
+        kernel_usage: "kernel_flippy"   # 匹配下载链接中的 Tag 名称
+        auto_kernel: false              # 必须关闭自动检测
+        openwrt_size: 820
+        build_date: ${{ env.build_date }}
+
+    - name: Organize files
+      run: |
+        if [[ "${{ github.event_name }}" == 'repository_dispatch' ]]; then
+          echo "prerelease_symbol=false" >> ${GITHUB_ENV}
+          sed -i '1,/cutline/d' ./doc/vplus.md
+        else
+          echo "prerelease_symbol=true" >> ${GITHUB_ENV}
+          sed -i '/cutline/,$d' ./doc/vplus.md
+        fi
+        rm -rf ./artifact/
+        mkdir -p ./artifact/
+        cp ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz ./artifact/
+
+    - name: Set short build date
+      run: echo "short_date=$(date +'%m-%d')" >> $GITHUB_ENV
+
+    - name: Set full tag name
+      run: echo "tag_name=${GITHUB_WORKFLOW} $short_date" >> $GITHUB_ENV
+
+    - name: Upload firmware to release
+      uses: ncipollo/release-action@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag: ${{ env.tag_name }}
+        allowUpdates: true
+        replacesArtifacts: true
+        prerelease: ${{ env.prerelease_symbol }}
+        artifacts: ./artifact/*.img.gz
+        bodyFile: ./doc/vplus.md
+
+    - name: 发送 Telegram 通知
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        MESSAGE="vplus 固件编译成功 ✅ 🎉\n📅 日期: $(date '+%Y-%m-%d %H:%M:%S')"
+        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+           -d chat_id="$TELEGRAM_CHAT_ID" \
+           -d parse_mode="Markdown" \
+           -d text="$MESSAGE"
+           
+    - name: 删除旧的 Workflow Runs（保留最近 2 次）
+      env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+      run: |
+          echo "📥 查找 workflow_id（按名称匹配）..."
+          workflow_id=$(curl -s -H "Authorization: token $GH_PAT" \
+            https://api.github.com/repos/$REPO/actions/workflows | \
+            jq --arg name "$WORKFLOW_NAME" '.workflows[] | select(.name == $name) | .id')
+
+          echo "workflow_id: $workflow_id"
+          if [ -z "$workflow_id" ]; then
+            echo "❌ 无法找到 workflow_id，退出..."
+            exit 1
+          fi
+
+          echo "🔄 获取运行历史（保留最近 2 个）..."
+          run_ids=$(curl -s -H "Authorization: token $GH_PAT" \
+            "https://api.github.com/repos/$REPO/actions/workflows/$workflow_id/runs?per_page=100" | \
+            jq '.workflow_runs | .[2:] | .[].id')
+
+          echo "🗑️ 删除旧 Workflow Runs..."
+          for run_id in $run_ids; do
+            echo "➡ 删除 run $run_id"
+            curl -s -X DELETE -H "Authorization: token $GH_PAT" \
+              "https://api.github.com/repos/$REPO/actions/runs/$run_id"
+          done
+
+    - name: Delete old releases
+      uses: dev-drprasad/delete-older-releases@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        keep_latest: 2
+        delete_tags : true
