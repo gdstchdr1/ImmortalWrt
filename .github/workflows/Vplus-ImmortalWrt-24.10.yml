@@ -126,11 +126,10 @@ jobs:
         mkdir -p ./artifact/
         cp ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz ./artifact/
 
-    - name: Set short build date
-      run: echo "short_date=$(date +'%m-%d')" >> $GITHUB_ENV
-
-    - name: Set full tag name
-      run: echo "tag_name=${GITHUB_WORKFLOW} $short_date" >> $GITHUB_ENV
+    - name: Set tag name
+      run: |
+        short_date=$(date +'%m-%d')
+        echo "tag_name=$(echo "${GITHUB_WORKFLOW}-V${short_date}" | tr ' ' '_')" >> $GITHUB_ENV
 
     - name: Upload firmware to release
       uses: ncipollo/release-action@main
