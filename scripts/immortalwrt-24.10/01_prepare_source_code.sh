@@ -15,14 +15,17 @@ clone_repo $amlogic_repo main amlogic &
 wait
 
 # 进行一些处理
-find openwrt/package/* -maxdepth 0 ! -name 'firmware' ! -name 'kernel' ! -name 'base-files' ! -name 'Makefile' -exec rm -rf {} +
-rm -rf ./openwrt_snap/package/firmware ./openwrt_snap/package/kernel ./openwrt_snap/package/base-files ./openwrt_snap/package/Makefile
+[ -d openwrt/package ] && find openwrt/package/* -maxdepth 0 ! -name 'firmware' ! -name 'kernel' ! -name 'base-files' ! -name 'Makefile' -exec rm -rf {} +
+[ -d openwrt_snap/package ] && rm -rf ./openwrt_snap/package/firmware ./openwrt_snap/package/kernel ./openwrt_snap/package/base-files ./openwrt_snap/package/Makefile
 cp -rf ./openwrt_snap/package/* ./openwrt/package/
 cp -rf ./openwrt_snap/feeds.conf.default ./openwrt/feeds.conf.default
 
 # 设置默认密码为 password
 sed -i 's/root:::0:99999:7:::/root:$1$V4UetPzk$CYXluq4wUazHjmCDBCqXF.::0:99999:7:::/g' openwrt/package/base-files/files/etc/shadow
-# 修改默认 IP 为 192.168.1.99
-# sed -i 's/192.168.1.1/192.168.10.99/g' openwrt/package/base-files/files/bin/config_generate
+
+# 创建软链接供兼容使用
+mkdir -p /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/
+ln -sf "$(pwd)/openwrt" /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/openwrt
 
 exit 0
+
