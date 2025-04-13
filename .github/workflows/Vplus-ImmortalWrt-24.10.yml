@@ -124,9 +124,17 @@ jobs:
           echo "prerelease_symbol=true" >> ${GITHUB_ENV}
           sed -i '/cutline/,$d' ./doc/vplus.md
         fi
+
         rm -rf ./artifact/
         mkdir -p ./artifact/
-        cp ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz ./artifact/
+
+        # 检查是否有 img.gz 文件，如果有就复制，没有就报错退出
+        if find output/ -name '*.img.gz' | grep -q .; then
+          find output/ -name '*.img.gz' -exec cp {} ./artifact/ \;
+        else
+          echo "❌ No .img.gz files found in output/. Check openwrt_packit step."
+          exit 1
+        fi
 
     - name: Set tag name
       run: |
