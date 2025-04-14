@@ -7,15 +7,18 @@
 
 ### 固件差异
 
-|固件 \ 插件 |PassWall |OpenClash |FileBrowser |HomeProxy |Nikki |KMS |zerotier |ddns-go |acme |
-|:---: |:---: |:---: |:---: |:---: |:---: |:---: |:---: |:---: |:---: |
-|ImmortalWrt-18.06 |⭕ |⭕ |⭕ |❌ |❌ |❌ |
-|ImmortalWrt-24.10 |✅ |❌ |✅ |✅ |✅ |✅ |✅ |✅ |✅ |
-|Openwrt-24.10 |⭕ |❌ |⭕ |⭕ |⭕ |⭕ |
-|LEDE |⭕ |❌ |⭕ |⭕ |⭕ |⭕ |
-|iStoreOS-22.03 |⭕ |⭕ |⭕ |❌ |❌ |❌ |
+| 插件 \ 固件       | ImmortalWrt-24.10 | Openwrt-24.10 | LEDE | iStoreOS-22.03 |
+|-------------------|:-----------------:|:-------------:|:----:|:--------------:|
+| **PassWall**      |       ✅         |       ⭕      |  ⭕  |       ⭕       |
+| **OpenClash**     |       ❌         |       ❌      |  ❌  |       ⭕       |
+| **FileBrowser**   |       ✅         |       ⭕      |  ⭕  |       ⭕       |
+| **HomeProxy**     |       ✅         |       ⭕      |  ⭕  |       ❌       |
+| **Nikki**         |       ✅         |       ⭕      |  ⭕  |       ❌       |
+| **KMS**           |       ✅         |       ⭕      |  ⭕  |       ❌       |
+| **zerotier**      |       ✅         |       ⭕      |  ⭕  |       ❌       |
+| **ddns-go**       |       ✅         |       ⭕      |  ⭕  |       ❌       |
+| **acme**          |       ✅         |       ⭕      |  ⭕  |       ❌       |
 
-`ImmortalWrt-18.06 固件代码太老，其 PassWall 插件不含 sing-box 核心。`
 
 ===cutline===
 ### sing-box
