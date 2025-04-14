@@ -129,10 +129,10 @@ jobs:
         mkdir -p ./artifact/
 
         # 检查是否有 img.gz 文件，如果有就复制，没有就报错退出
-        if find output/ -name '*.img.gz' | grep -q .; then
-          find output/ -name '*.img.gz' -exec cp {} ./artifact/ \;
+        if find output/ -name '*.img.*' | grep -q .; then
+          find output/ -name '*.img.*' -exec cp {} ./artifact/ \;
         else
-          echo "❌ No .img.gz files found in ${{ env.PACKAGED_OUTPUTPATH }}/. Check openwrt_packit step."
+          echo "❌ No .img.* files found in ${{ env.PACKAGED_OUTPUTPATH }}/. Check openwrt_packit step."
           exit 1
         fi
 
