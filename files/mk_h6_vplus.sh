@@ -4,6 +4,15 @@ echo "========================= begin $0 ================="
 source make.env
 source public_funcs
 init_work_env
+# === 屏蔽 cgroup2 补丁 ===
+CGROUP2_PATCH_DIR="${PWD}/files/cgroup2_patches"
+if [ -d "$CGROUP2_PATCH_DIR" ]; then
+    echo "[ INFO ] 跳过 cgroup2 补丁，删除 $CGROUP2_PATCH_DIR 下的补丁文件"
+    rm -f ${CGROUP2_PATCH_DIR}/0001-fix-cgroupfs-mount.patch
+    rm -f ${CGROUP2_PATCH_DIR}/900-mount-cgroup-v2-hierarchy-to-sys-fs-cgroup-cgroup2.patch
+    rm -f ${CGROUP2_PATCH_DIR}/901-fix-cgroupfs-umount.patch
+    rm -f ${CGROUP2_PATCH_DIR}/902-mount-sys-fs-cgroup-systemd-for-docker-systemd-suppo.patch
+fi
 
 PLATFORM=allwinner
 SOC=h6
