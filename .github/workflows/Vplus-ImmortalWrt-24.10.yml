@@ -132,14 +132,14 @@ jobs:
         if find output/ -name '*.img.gz' | grep -q .; then
           find output/ -name '*.img.gz' -exec cp {} ./artifact/ \;
         else
-          echo "❌ No .img.gz files found in output/. Check openwrt_packit step."
+          echo "❌ No .img.gz files found in ${{ env.PACKAGED_OUTPUTPATH }}/. Check openwrt_packit step."
           exit 1
         fi
 
     - name: Set tag name
       run: |
         short_date=$(date +'%m-%d')
-        echo "tag_name=$(echo "${GITHUB_WORKFLOW}-V${short_date}" | tr ' ' '_')" >> $GITHUB_ENV
+        echo "tag_name=$(echo "${GITHUB_WORKFLOW}_V${short_date}" | tr ' ' '_')" >> $GITHUB_ENV
 
     - name: Upload firmware to release
       uses: ncipollo/release-action@main
