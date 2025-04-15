@@ -101,13 +101,28 @@ jobs:
         name: OpenWrt_rootfs_${{ env.build_date }}
         path: openwrt/bin
 
-    - name: Package armsr as openwrt    #将 armsr 打包为 openwrt
+    - name: Package armsr as openwrt [6.6.y]    #将 armsr 打包为 openwrt内核6.6.y
       if: ${{ env.compile_status }} == 'success' && !cancelled()
       uses: unifreq/openwrt_packit@master
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
         KERNEL_REPO_URL: breakingbadboy/OpenWrt
         KERNEL_VERSION_NAME: 6.6.y
+        PACKAGE_SOC: diy
+        GZIP_IMGS: .gz
+        SCRIPT_DIY_PATH: files/mk_h6_vplus.sh
+        WHOAMI: gdstchdr
+        SW_FLOWOFFLOAD: 0
+        SFE_FLOW: 0
+        DISABLE_CGROUP_PATCHES: 1
+
+    - name: Package armsr as openwrt [6.12.y]    #将 armsr 打包为 openwrt内核6.12.y
+      if: ${{ env.compile_status }} == 'success' && !cancelled()
+      uses: unifreq/openwrt_packit@master
+      env:
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+        KERNEL_REPO_URL: breakingbadboy/OpenWrt
+        KERNEL_VERSION_NAME: 6.12.y
         PACKAGE_SOC: diy
         GZIP_IMGS: .gz
         SCRIPT_DIY_PATH: files/mk_h6_vplus.sh
