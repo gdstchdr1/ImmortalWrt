@@ -15,7 +15,7 @@ jobs:
     if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
-    - name: Show system
+    - name: Show system  #显示系统
       run: |
         echo -e "💬 Server information \n"
         echo -e "💻 Server running on Ubuntu: [ Release: $(cat /etc/os-release | grep VERSION_CODENAME | cut -d '=' -f2) / Host: $(arch) ] \n"
@@ -23,7 +23,7 @@ jobs:
         echo -e "💾 Server memory usage: \n$(free -h) \n"
         echo -e "🗃️ Server space usag: \n$(df -hT ${GITHUB_WORKSPACE}) \n"
 
-    - name: Maximize build space
+    - name: Maximize build space  #最大化编译空间
       uses: easimon/maximize-build-space@master
       with:
         swap-size-mb: 4096
@@ -34,10 +34,10 @@ jobs:
         remove-haskell: 'true'
         remove-codeql: 'true'
 
-    - name: Checkout
+    - name: Checkout   #检查代码
       uses: actions/checkout@v4
 
-    - name: Init build dependencies
+    - name: Init build dependencies   #初始化编译依赖
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -55,7 +55,7 @@ jobs:
         sudo -E git config --global core.abbrev auto
         df -h
 
-    - name: Prepare source code
+    - name: Prepare source code    #准备源代码
       run: |
         sudo chown -R runner:runner /home/runner/work/build_openwrt
         echo "build_date=$(date +%Y.%m.%d)" >> ${GITHUB_ENV}
@@ -63,13 +63,13 @@ jobs:
         /bin/bash 01_prepare_source_code.sh
         ln -sf /home/runner/work/build_openwrt/build_openwrt/openwrt /home/runner/work/_actions/ffuqiangg/amlogic-s9xxx-openwrt/main/openwrt
 
-    - name: Prepare package
+    - name: Prepare package    #准备软件包
       working-directory: ${{ github.workspace }}/openwrt
       run: |
         cp -r ../scripts/immortalwrt-24.10/. ./
         /bin/bash 02_prepare_package.sh
 
-    - name: Load custom configuration
+    - name: Load custom configuration    #加载自定义配置
       run: |
         latest_release="$(curl -s https://github.com/immortalwrt/immortalwrt/tags | grep -Eo "v[0-9\.]+-*r*c*[0-9]*.tar.gz" | sed -n '/24.10/p' | sed -n 1p | sed 's/.tar.gz//g' | sed 's/v//g')"
         kernel_version="6.6.85"
@@ -77,31 +77,31 @@ jobs:
         echo "latest_release=${latest_release}" >> ${GITHUB_ENV}
         echo "kernel_version=${kernel_version}" >> ${GITHUB_ENV}
 
-    - name: Make config
+    - name: Make config    #生成配置
       working-directory: ${{ github.workspace }}/openwrt
       run: |
         cp ../config/immortalwrt-24.10/config.seed .config
         make defconfig
 
-    - name: Download package
+    - name: Download package    #下载软件包
       working-directory: ${{ github.workspace }}/openwrt
       run: |
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile the firmware
+    - name: Compile the firmware    #编译固件
       working-directory: ${{ github.workspace }}/openwrt
       run: |
         make -j$(nproc) || make -j1 || make -j1 V=s
 
-    - name: Upload firmware directory
+    - name: Upload firmware directory    #上传固件目录
       uses: actions/upload-artifact@main
       with:
         name: OpenWrt_rootfs_${{ env.build_date }}
         path: openwrt/bin
 
-    - name: Package armsr as openwrt
+    - name: Package armsr as openwrt    #将 armsr 打包为 openwrt
       if: ${{ env.compile_status }} == 'success' && !cancelled()
       uses: unifreq/openwrt_packit@master
       env:
@@ -116,7 +116,7 @@ jobs:
         SFE_FLOW: 0
         DISABLE_CGROUP_PATCHES: 1
         
-    - name: Organize files
+    - name: Organize files    #整理文件
       run: |
         if [[ "${{ github.event_name }}" == 'repository_dispatch' ]]; then
           echo "prerelease_symbol=false" >> ${GITHUB_ENV}
@@ -150,12 +150,12 @@ jobs:
         overwrite: false
         include-hidden-files: false
 
-    - name: Set tag name
+    - name: Set tag name    #设置标签名称
       run: |
         short_date=$(date +'%m-%d')
         echo "tag_name=$(echo "${GITHUB_WORKFLOW}_V${short_date}" | tr ' ' '_')" >> $GITHUB_ENV
 
-    - name: Upload firmware to release
+    - name: Upload firmware to release    #上传固件至release
       uses: ncipollo/release-action@main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -207,7 +207,7 @@ jobs:
               "https://api.github.com/repos/$REPO/actions/runs/$run_id"
           done
 
-    - name: Delete old releases
+    - name: 删除旧的发布版本
       uses: dev-drprasad/delete-older-releases@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
