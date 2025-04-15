@@ -164,7 +164,7 @@ jobs:
         allowUpdates: true
         replacesArtifacts: true
         prerelease: ${{ env.prerelease_symbol }}
-        artifacts: ./artifact/*.img.gz
+        artifacts: ./artifact/*.img.*
         bodyFile: ./doc/vplus.md
 
     - name: 发送 Telegram 通知
