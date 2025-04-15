@@ -114,6 +114,7 @@ jobs:
         WHOAMI: gdstchdr
         SW_FLOWOFFLOAD: 0
         SFE_FLOW: 0
+        DISABLE_CGROUP_PATCHES: 1
 
     - name: Organize files
       run: |
