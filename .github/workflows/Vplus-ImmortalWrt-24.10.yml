@@ -116,6 +116,12 @@ jobs:
         SFE_FLOW: 0
         DISABLE_CGROUP_PATCHES: 1
 
+    - name: Upload firmware directory
+      uses: actions/upload-artifact@main
+      with:
+        name: OpenWrt_vlpus_${{ env.build_date }}
+        path: opt/openwrt_packit/output
+        
     - name: Organize files
       run: |
         if [[ "${{ github.event_name }}" == 'repository_dispatch' ]]; then
