@@ -129,18 +129,26 @@ jobs:
         rm -rf ./artifact/
         mkdir -p ./artifact/
 
-        echo "[ INFO ] Listing contents of /opt/openwrt_packit/output/"
-        ls -lh /opt/openwrt_packit/output/
-        
-        # 检查是否有 img.gz 文件，如果有就复制，没有就报错退出
-        if find /opt/openwrt_packit/output/ -name '*.img.*' | grep -q .; then
-          echo "[ INFO ] .img 文件存在，开始复制到 ./artifact/"
-          find /opt/openwrt_packit/output/ -name '*.img.*' -exec cp -v {} ./artifact/ \;
-          find /opt/openwrt_packit/output/ -name '*.sha' -exec cp -v {} ./artifact/ \;
+        echo "📦 复制打包文件到工作目录 ./artifact/"
+        cp -av /opt/openwrt_packit/output/* ./artifact/
+
+        echo "🔍 检查是否存在 .img.* 文件"
+        if find ./artifact/ -name '*.img.*' | grep -q .; then
+          echo "✅ 找到镜像文件"
         else
-          echo "❌ No .img.* files found in /opt/openwrt_packit/output/. Check openwrt_packit step."
+          echo "❌ No .img.* files found in ./artifact/. Check openwrt_packit step."
           exit 1
         fi
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@main
+      with:
+        name: OpenWrt_vplus_${{ env.build_date }}
+        path: ./artifact/
+        if-no-files-found: warn
+        compression-level: 6
+        overwrite: false
+        include-hidden-files: false
 
     - name: Set tag name
       run: |
