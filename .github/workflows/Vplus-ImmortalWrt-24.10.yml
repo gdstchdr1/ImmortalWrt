@@ -115,12 +115,6 @@ jobs:
         SW_FLOWOFFLOAD: 0
         SFE_FLOW: 0
         DISABLE_CGROUP_PATCHES: 1
-
-    - name: Upload firmware directory
-      uses: actions/upload-artifact@main
-      with:
-        name: OpenWrt_vlpus_${{ env.build_date }}
-        path: opt/openwrt_packit/output
         
     - name: Organize files
       run: |
@@ -135,11 +129,16 @@ jobs:
         rm -rf ./artifact/
         mkdir -p ./artifact/
 
+        echo "[ INFO ] Listing contents of /opt/openwrt_packit/output/"
+        ls -lh /opt/openwrt_packit/output/
+        
         # 检查是否有 img.gz 文件，如果有就复制，没有就报错退出
-        if find output/ -name '*.img.*' | grep -q .; then
-          find output/ -name '*.img.*' -exec cp {} ./artifact/ \;
+        if find /opt/openwrt_packit/output/ -name '*.img.*' | grep -q .; then
+          echo "[ INFO ] .img 文件存在，开始复制到 ./artifact/"
+          find /opt/openwrt_packit/output/ -name '*.img.*' -exec cp -v {} ./artifact/ \;
+          find /opt/openwrt_packit/output/ -name '*.sha' -exec cp -v {} ./artifact/ \;
         else
-          echo "❌ No .img.* files found in ${{ env.PACKAGED_OUTPUTPATH }}/. Check openwrt_packit step."
+          echo "❌ No .img.* files found in /opt/openwrt_packit/output/. Check openwrt_packit step."
           exit 1
         fi
 
