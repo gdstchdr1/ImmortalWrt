@@ -187,12 +187,7 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: |
-        MESSAGE="✅ *vplus 固件编译成功*\n\n\
-            🧱 *固件名称*: Vplus-ImmortalWrt\n\
-            🧬 *内核版本*: ${{ env.kernel_version }}\n\
-            📦 *OpenWrt 版本*: ${{ env.latest_release }}\n\
-            🗃️ *固件文件*: $(ls ./artifact/*.img.gz | xargs -n1 basename)\n\
-            📅 *编译时间*: $(date '+%Y-%m-%d %H:%M:%S')"
+        MESSAGE="✅ *vplus 固件编译成功*\n\n🧱 固件名称: *${GITHUB_WORKFLOW}*\n🧬 内核版本: *${{ env.kernel_version }}*\n📦 OpenWrt 版本: *${{ env.latest_release }}*\n🗃️ 固件文件: *${FIRMWARE_NAME}*\n📅 编译时间: *${BUILD_TIME}*"
 
         curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
             -d chat_id="$TELEGRAM_CHAT_ID" \
