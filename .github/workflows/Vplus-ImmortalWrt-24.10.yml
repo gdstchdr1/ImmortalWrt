@@ -106,7 +106,7 @@ jobs:
       uses: unifreq/openwrt_packit@master
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
-        KERNEL_REPO_URL: ophub/kernel
+        KERNEL_REPO_URL: breakingbadboy/OpenWrt
         KERNEL_VERSION_NAME: 6.6.86
         PACKAGE_SOC: diy
         GZIP_IMGS: .gz
@@ -121,7 +121,7 @@ jobs:
       uses: unifreq/openwrt_packit@master
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
-        KERNEL_REPO_URL: ophub/kernel
+        KERNEL_REPO_URL: breakingbadboy/OpenWrt
         KERNEL_VERSION_NAME: 6.12.22
         PACKAGE_SOC: diy
         GZIP_IMGS: .gz
@@ -155,16 +155,6 @@ jobs:
           exit 1
         fi
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@main
-      with:
-        name: OpenWrt_vplus_${{ env.build_date }}
-        path: ./artifact/
-        if-no-files-found: warn
-        compression-level: 6
-        overwrite: false
-        include-hidden-files: false
-
     - name: Set tag name    #设置标签名称
       run: |
         short_date=$(date +'%m-%d')
@@ -179,7 +169,9 @@ jobs:
         allowUpdates: true
         replacesArtifacts: true
         prerelease: ${{ env.prerelease_symbol }}
-        artifacts: ./artifact/*.img.*
+        artifacts: |
+          ./artifact/*.img.*
+          ./artifact/*rootfs.tar.gz
         bodyFile: ./doc/vplus.md
 
     - name: 发送 Telegram 通知
