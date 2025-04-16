@@ -106,7 +106,7 @@ jobs:
       with:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
         openwrt_board: s905d
-        kernel_repo: ophub/kernel
+        kernel_repo: breakingbadboy/OpenWrt
         openwrt_kernel: "6.6.86"
         kernel_usage: "kernel_flippy"
         auto_kernel: false
@@ -125,7 +125,7 @@ jobs:
       with:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
         openwrt_board: s905d
-        kernel_repo: ophub/kernel
+        kernel_repo: breakingbadboy/OpenWrt
         openwrt_kernel: "6.12.1"
         kernel_usage: "kernel_flippy"
         auto_kernel: false
@@ -160,11 +160,19 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: |
-        MESSAGE="N1 固件编译成功 ✅ 🎉\n📅 日期: $(date '+%Y-%m-%d %H:%M:%S')"
+        BUILD_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+        FIRMWARE_NAME=$(basename $(ls ./artifact/*.img.gz | head -n 1))
+        MESSAGE="✅ *N1 固件编译成功！*\n\n\
+        🧱 固件名称:    *${GITHUB_WORKFLOW}*\n\
+        🧬 内核版本:    *${{ env.kernel_version }}*\n\
+        📦 OpenWrt 版本: *${{ env.latest_release }}*\n\
+        🗃️ 固件文件:    *${FIRMWARE_NAME}*\n\
+        📅 编译时间:    *${BUILD_TIME}*"
+
         curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-           -d chat_id="$TELEGRAM_CHAT_ID" \
-           -d parse_mode="Markdown" \
-           -d text="$MESSAGE"
+          -d chat_id="$TELEGRAM_CHAT_ID" \
+          -d parse_mode="Markdown" \
+          -d text="$MESSAGE"
            
     - name: 删除旧的 Workflow Runs（保留最近 2 次）
       env:
