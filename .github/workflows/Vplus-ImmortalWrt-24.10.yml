@@ -179,12 +179,19 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: |
-        MESSAGE="✅ *vplus 固件编译成功*\n\n🧱 固件名称: *${GITHUB_WORKFLOW}*\n🧬 内核版本: *${{ env.kernel_version }}*\n📦 OpenWrt 版本: *${{ env.latest_release }}*\n🗃️ 固件文件: *${FIRMWARE_NAME}*\n📅 编译时间: *${BUILD_TIME}*"
+        BUILD_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+        FIRMWARE_NAME=$(basename $(ls ./artifact/*.img.gz | head -n 1))
+        MESSAGE="✅ *Vplus 固件编译成功！*\n\n\
+        🧱 固件名称:    *${GITHUB_WORKFLOW}*\n\
+        🧬 内核版本:    *${{ env.kernel_version }}*\n\
+        📦 OpenWrt 版本: *${{ env.latest_release }}*\n\
+        🗃️ 固件文件:    *${FIRMWARE_NAME}*\n\
+        📅 编译时间:    *${BUILD_TIME}*"
 
         curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            -d chat_id="$TELEGRAM_CHAT_ID" \
-            -d parse_mode="Markdown" \
-            -d text="$MESSAGE"
+          -d chat_id="$TELEGRAM_CHAT_ID" \
+          -d parse_mode="Markdown" \
+          -d text="$MESSAGE"
            
     - name: 删除旧的 Workflow Runs（保留最近 2 次）
       env:
