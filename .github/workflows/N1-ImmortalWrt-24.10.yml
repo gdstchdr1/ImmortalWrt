@@ -124,14 +124,14 @@ jobs:
       with:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
         openwrt_board: s905d
-        kernel_repo: ophub/kernel
-        openwrt_kernel: "6.6.87"
-        kernel_usage: "kernel_flippy"
+        kernel_repo: ffuqiangg/kernel_6.6.y
+        openwrt_kernel: ${{ env.kernel_version }}
+        kernel_usage: stable
         auto_kernel: false
         openwrt_size: 820
         build_date: ${{ env.build_date }}
-
-    - name: Rename 6.6.86 firmware
+        
+    - name: Rename 6.6.X firmware
       run: |
         mkdir -p ./artifact/
         for f in ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz; do
@@ -144,13 +144,13 @@ jobs:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
         openwrt_board: s905d
         kernel_repo: ophub/kernel
-        openwrt_kernel: "6.12.22"
-        kernel_usage: "kernel_flippy"
+        openwrt_kernel: ${{ env.kernel_version }}
+        kernel_usage: stable
         auto_kernel: false
         openwrt_size: 820
         build_date: ${{ env.build_date }}
-
-    - name: Rename 6.12.1 firmware
+        
+    - name: Rename 6.12.X firmware
       run: |
         for f in ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz; do
           cp "$f" "./artifact/$(basename "$f" .img.gz)-k6.12.img.gz"
