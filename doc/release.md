@@ -21,7 +21,4 @@
 | **acme**          |       ✅         |       ⭕      |       ❌       |  ⭕  |
 
 
-===cutline===
-### sing-box
 
-sing-box 裸核相关脚本文件安装使用方法见 ⌈ [sing-box 安装使用文档](https://github.com/ffuqiangg/build_openwrt/blob/main/doc/sing-box_new.md) ⌋
