@@ -90,10 +90,23 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: 修改插件名称为中文
+    - name: 修改 LuCI 插件中文名称
       run: |
-        sed -i 's/msgstr "vlmcsd"/msgstr "KMS 激活"/' feeds/luci/applications/luci-app-vlmcsd/po/zh_Hans/*.po
-        sed -i 's/msgstr "filebrowser"/msgstr "文件浏览器"/' feeds/luci/applications/luci-app-filebrowser/po/zh_Hans/*.po
+        declare -A plugins
+        plugins["vlmcsd"]="KMS 激活"
+        plugins["filebrowser"]="文件浏览器"
+
+        for app in "${!plugins[@]}"; do
+          PO_FILE=$(find feeds -type f -path "*/luci-app-${app}/po/zh_Hans/*.po" | head -n 1)
+          if [ -n "$PO_FILE" ]; then
+            OLD=$(grep -oP 'msgstr\s+"\K[^"]+' "$PO_FILE" | head -n 1)
+            NEW="${plugins[$app]}"
+            echo "✔ 正在修改 luci-app-${app} 名称：$OLD → $NEW"
+            sed -i "s/msgstr \"$OLD\"/msgstr \"$NEW\"/" "$PO_FILE"
+          else
+            echo "⚠️ 未找到 luci-app-${app} 的 po 文件，跳过。"
+          fi
+        done
 
     - name: Compile the firmware
       working-directory: ${{ github.workspace }}/openwrt
