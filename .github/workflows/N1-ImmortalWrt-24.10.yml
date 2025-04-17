@@ -101,13 +101,13 @@ jobs:
         name: OpenWrt_rootfs_${{ env.build_date }}
         path: openwrt/bin
 
-    - name: Packit firmware - 6.6.86
+    - name: Packit firmware - 6.6.X
       uses: ffuqiangg/amlogic-s9xxx-openwrt@main
       with:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
         openwrt_board: s905d
-        kernel_repo: breakingbadboy/OpenWrt
-        openwrt_kernel: "6.6.86"
+        kernel_repo: ophub/kernel
+        openwrt_kernel: "6.6.87"
         kernel_usage: "kernel_flippy"
         auto_kernel: false
         openwrt_size: 820
@@ -120,13 +120,13 @@ jobs:
           cp "$f" "./artifact/$(basename "$f" .img.gz)-k6.6.img.gz"
         done
 
-    - name: Packit firmware - 6.12.1
+    - name: Packit firmware - 6.12.X
       uses: ffuqiangg/amlogic-s9xxx-openwrt@main
       with:
         openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
         openwrt_board: s905d
-        kernel_repo: breakingbadboy/OpenWrt
-        openwrt_kernel: "6.12.1"
+        kernel_repo: ophub/kernel
+        openwrt_kernel: "6.12.22"
         kernel_usage: "kernel_flippy"
         auto_kernel: false
         openwrt_size: 820
@@ -152,7 +152,9 @@ jobs:
         allowUpdates: true
         replacesArtifacts: true
         prerelease: ${{ env.prerelease_symbol }}
-        artifacts: ./artifact/*.img.gz
+        artifacts: |
+          ./artifact/*.img.*
+          ./artifact/*rootfs.tar.gz
         bodyFile: ./doc/release.md
 
     - name: 发送 Telegram 通知
