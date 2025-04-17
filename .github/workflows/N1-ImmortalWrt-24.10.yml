@@ -119,42 +119,59 @@ jobs:
         name: OpenWrt_rootfs_${{ env.build_date }}
         path: openwrt/bin
 
-    - name: Packit firmware - 6.6.X
-      uses: ffuqiangg/amlogic-s9xxx-openwrt@main
-      with:
-        openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
-        openwrt_board: s905d
-        kernel_repo: ffuqiangg/kernel_6.6.y
-        openwrt_kernel: ${{ env.kernel_version }}
-        kernel_usage: stable
-        auto_kernel: false
-        openwrt_size: 820
-        build_date: ${{ env.build_date }}
-        
-    - name: Rename 6.6.X firmware
-      run: |
-        mkdir -p ./artifact/
-        for f in ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz; do
-          cp "$f" "./artifact/$(basename "$f" .img.gz)-k6.6.img.gz"
-        done
+    - name: Package armsr as openwrt [6.6.y]    #将 armsr 打包为 openwrt内核6.6.y
+      if: ${{ env.compile_status }} == 'success' && !cancelled()
+      uses: unifreq/openwrt_packit@master
+      env:
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+        KERNEL_REPO_URL: ophub/kernel
+        KERNEL_VERSION_NAME: 6.6.86
+        PACKAGE_SOC: diy
+        GZIP_IMGS: .gz
+        SCRIPT_DIY_PATH: files/mk_s905d_n1.sh
+        WHOAMI: gdstchdr
+        SW_FLOWOFFLOAD: 0
+        SFE_FLOW: 0
+        DISABLE_CGROUP_PATCHES: 1
 
-    - name: Packit firmware - 6.12.X
-      uses: ffuqiangg/amlogic-s9xxx-openwrt@main
-      with:
-        openwrt_path: openwrt/bin/targets/*/*/*rootfs.tar.gz
-        openwrt_board: s905d
-        kernel_repo: ophub/kernel
-        openwrt_kernel: ${{ env.kernel_version }}
-        kernel_usage: stable
-        auto_kernel: false
-        openwrt_size: 820
-        build_date: ${{ env.build_date }}
-        
-    - name: Rename 6.12.X firmware
+    - name: Package armsr as openwrt [6.12.y]    #将 armsr 打包为 openwrt内核6.12.y
+      if: ${{ env.compile_status }} == 'success' && !cancelled()
+      uses: unifreq/openwrt_packit@master
+      env:
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+        KERNEL_REPO_URL: ophub/kernel
+        KERNEL_VERSION_NAME: 6.12.22
+        PACKAGE_SOC: diy
+        GZIP_IMGS: .gz
+        SCRIPT_DIY_PATH: files/mk_s905d_n1.sh
+        WHOAMI: gdstchdr
+        SW_FLOWOFFLOAD: 0
+        SFE_FLOW: 0
+        DISABLE_CGROUP_PATCHES: 1
+
+    - name: Organize files    #整理文件
       run: |
-        for f in ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz; do
-          cp "$f" "./artifact/$(basename "$f" .img.gz)-k6.12.img.gz"
-        done
+        if [[ "${{ github.event_name }}" == 'repository_dispatch' ]]; then
+          echo "prerelease_symbol=false" >> ${GITHUB_ENV}
+          sed -i '1,/cutline/d' ./doc/release.md
+        else
+          echo "prerelease_symbol=true" >> ${GITHUB_ENV}
+          sed -i '/cutline/,$d' ./doc/release.md
+        fi
+
+        rm -rf ./artifact/
+        mkdir -p ./artifact/
+
+        echo "📦 复制打包文件到工作目录 ./artifact/"
+        cp -av /opt/openwrt_packit/output/* ./artifact/
+
+        echo "🔍 检查是否存在 .img.* 文件"
+        if find ./artifact/ -name '*.img.*' | grep -q .; then
+          echo "✅ 找到镜像文件"
+        else
+          echo "❌ No .img.* files found in ./artifact/. Check openwrt_packit step."
+          exit 1
+        fi
 
     - name: Set tag name
       run: |
@@ -179,19 +196,24 @@ jobs:
       env:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        latest_release: ${{ env.latest_release }}
       run: |
         BUILD_TIME=$(date '+%Y-%m-%d %H:%M:%S')
         FIRMWARE_NAME=$(basename $(ls ./artifact/*.img.gz | head -n 1))
-        MESSAGE="✅ *N1 固件编译成功！*\n\n\
-        🧱 固件名称:    *${GITHUB_WORKFLOW}*\n\
-        🧬 内核版本:    *${{ env.kernel_version }}*\n\
-        📦 OpenWrt 版本: *${{ env.latest_release }}*\n\
-        🗃️ 固件文件:    *${FIRMWARE_NAME}*\n\
-        📅 编译时间:    *${BUILD_TIME}*"
 
-        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-          -d chat_id="$TELEGRAM_CHAT_ID" \
-          -d parse_mode="Markdown" \
+        # 提取内核版本号（例如 k6.6.y 和 k6.12.y）
+        KERNEL_VERSIONS=$(echo "$FIRMWARE_NAME" | grep -oE 'k[0-9]+\.[0-9]+(\.[0-9]+)?' | sed 's/^k//' | paste -sd ' / ')
+
+        MESSAGE="✅ *N1 固件编译成功！*\n\n\`\`\`\n\
+        🧱 固件名称      : N1-ImmortalWrt-24.10\n\
+        🧬 内核版本      : ${KERNEL_VERSIONS}\n\
+        📦 OpenWrt 版本  : ${{ env.latest_release }}\n\
+        🗃️ 固件文件      : ${FIRMWARE_NAME}\n\
+        📅 编译时间      : ${BUILD_TIME}\n\`\`\`"
+
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          -d chat_id="${TELEGRAM_CHAT_ID}" \
+          -d parse_mode="MarkdownV2" \
           -d text="$MESSAGE"
            
     - name: 删除旧的 Workflow Runs（保留最近 2 次）
