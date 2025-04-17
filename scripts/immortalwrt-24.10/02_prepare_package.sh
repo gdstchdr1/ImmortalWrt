@@ -8,6 +8,10 @@ sed -i 's/Os/O2/g' include/target.mk
 # 更新 Feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
+
+# 添加 luci-app-nikki 插件
+git clone https://github.com/nikkinikki-org/OpenWrt-nikki.git ./package/new/luci-app-nikki
+
 # 移除 SNAPSHOT 标签
 sed -i 's,-SNAPSHOT,,g' include/version.mk
 sed -i 's,-SNAPSHOT,,g' package/base-files/image-config.in
@@ -69,8 +73,6 @@ sed -i 's,services,network,g' feeds/luci/applications/luci-app-nlbwmon/root/usr/
 pushd feeds/luci/applications/luci-app-verysync
 move_2_services nas
 popd
-# Nikki
-cp -rf ../openwrt-apps/OpenWrt-nikki ./package/new/luci-app-nikki
 # 晶晨宝盒
 cp -rf ../amlogic/luci-app-amlogic ./package/new/luci-app-amlogic
 
