@@ -169,7 +169,7 @@ config subscribe_list
 	option domain_strategy 'global'
 	option auto_update '0'
 	option user_agent 'v2rayN/9.99'
-	option url 'https://raw.githubusercontent.com/gdstchdr1/software/refs/heads/main/vplus.txt?token=GHSAT0AAAAAAC4ISFOFSHRVJMQTVZX27CGAZ6YYKGA'
+	option url 'https://raw.githubusercontent.com'
 
 config nodes 'SBo2BOv5'
 	option type 'SS'
