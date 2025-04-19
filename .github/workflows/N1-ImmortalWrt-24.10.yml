@@ -92,6 +92,10 @@ jobs:
       uses: P3TERX/ssh2actions@main
       if: (github.event.inputs.ssh == 'true') || contains(github.event.action, 'ssh')
 
+    - name: 修改插件名
+        chmod +x patch/luci-i18n/rename-luci-menu.sh
+        bash patch/luci-i18n/rename-luci-menu.sh
+
     - name: Download package
       working-directory: ${{ github.workspace }}/openwrt
       run: |
