@@ -11,6 +11,7 @@ sed -i 's/Os/O2/g' include/target.mk
 
 # 添加 luci-app-nikki 插件
 git clone https://github.com/nikkinikki-org/OpenWrt-nikki.git ./package/new/luci-app-nikki
+git clone https://github.com/xiaorouji/openwrt-passwall2.git ./package/new/luci-app-passwall2
 
 # 移除 SNAPSHOT 标签
 sed -i 's,-SNAPSHOT,,g' include/version.mk
