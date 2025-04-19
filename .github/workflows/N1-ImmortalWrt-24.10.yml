@@ -93,6 +93,7 @@ jobs:
       if: (github.event.inputs.ssh == 'true') || contains(github.event.action, 'ssh')
 
     - name: 修改插件名
+      run: |
         chmod +x patch/luci-i18n/rename-luci-menu.sh
         bash patch/luci-i18n/rename-luci-menu.sh
 
